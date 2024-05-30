@@ -56,11 +56,12 @@ dkms.conf
 *.ld
 Startup/
 
-# STM32 libs CubeIDE specific dirs and files
+# STM32 libs and CubeIDE specific dirs and files
 Drivers/
 Middlewares/
 .settings/
-.launch
+*.launch
+*.scratch
 
 # Output
 Debug/
