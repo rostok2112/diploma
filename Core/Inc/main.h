@@ -31,7 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stm32f7xx_hal_rcc_ex.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -115,12 +115,12 @@ void Error_Handler(void);
 #define RMII_TXD0_GPIO_Port GPIOG
 #define SW0_Pin GPIO_PIN_3
 #define SW0_GPIO_Port GPIOB
-#define MPU_9250_SCL_Pin GPIO_PIN_6
-#define MPU_9250_SCL_GPIO_Port GPIOB
+#define MPU_SCL_Pin GPIO_PIN_6
+#define MPU_SCL_GPIO_Port GPIOB
 #define LD2_Pin GPIO_PIN_7
 #define LD2_GPIO_Port GPIOB
-#define MPU_9250_SDA_Pin GPIO_PIN_9
-#define MPU_9250_SDA_GPIO_Port GPIOB
+#define MPU_SDA_Pin GPIO_PIN_9
+#define MPU_SDA_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

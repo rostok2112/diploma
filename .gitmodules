@@ -1,0 +1,3 @@
+[submodule "Middlewares/Third_Party/MPU9250-DMP-STM32"]
+	path = Middlewares/Third_Party/MPU9250-DMP-STM32
+	url = https://github.com/rostok2112/MPU9250-DMP-STM32-F7xx-compat

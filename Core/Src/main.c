@@ -55,6 +55,8 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
+I2C_HandleTypeDef hi2c_mpu9250;
+
 
 const GPIO_pin_pair_t LED_PIN_PAIRS [] = {
 	{LD1_GPIO_Port, LD1_Pin},
@@ -113,7 +115,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-
+  hi2c_mpu9250 = hi2c1;
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -140,6 +142,7 @@ int main(void)
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
+
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
