@@ -15,6 +15,13 @@
   *
   ******************************************************************************
   */
+
+#define MPU_SCL_Pin GPIO_PIN_6
+#define MPU_SCL_GPIO_Port GPIOB
+#define MPU_SDA_Pin GPIO_PIN_9
+#define MPU_SDA_GPIO_Port GPIOB
+#define MPU_HI2C hi2c1
+
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -22,7 +29,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
+#include "MPUXX50.h"
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "my_types.h"
 /* USER CODE END Includes */
 
@@ -55,7 +66,9 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
-I2C_HandleTypeDef hi2c_mpu9250;
+
+uint8_t serialBuf[100];
+
 
 
 const GPIO_pin_pair_t LED_PIN_PAIRS [] = {
@@ -76,11 +89,13 @@ static void MX_I2C1_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
+int _write(int, char *, int );
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 
 /* USER CODE END 0 */
 
@@ -115,8 +130,36 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  hi2c_mpu9250 = hi2c1;
+
+
+
   /* USER CODE END 2 */
+
+  if (MPU_begin(&MPU_HI2C, AD0_LOW, AFSR_4G, GFSR_500DPS, 0.98, 0.004) == 1)
+    {
+	  sprintf((char *)serialBuf, "MPU LOADED");
+	  HAL_UART_Transmit_IT(&huart2, serialBuf, strlen((char *)serialBuf));
+	  HAL_Delay(100);
+    }
+  else
+    {
+      while (1)
+      {
+	    sprintf((char *)serialBuf, "MPU ERROR LOADING!");
+	    HAL_UART_Transmit_IT(&huart2, serialBuf, strlen((char *)serialBuf));
+	    HAL_Delay(100);
+      }
+    }
+
+    // Calibrate the IMU
+  sprintf((char *)serialBuf, "CALIBRATING GYRO...");
+  HAL_UART_Transmit_IT(&huart2, serialBuf, strlen((char *)serialBuf));
+  HAL_Delay(100);
+  MPU_calibrateGyro(&MPU_HI2C, 1500);
+  sprintf((char *)serialBuf, "CALIBRATION COMPLETED");
+  HAL_UART_Transmit_IT(&huart2, serialBuf, strlen((char *)serialBuf));
+  HAL_Delay(100);
+
 
   /* Init scheduler */
   osKernelInitialize();
@@ -237,7 +280,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x6000030D;
+  hi2c1.Init.Timing = 0x20404768;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -390,19 +433,21 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : USB_SOF_Pin USB_ID_Pin USB_DM_Pin USB_DP_Pin */
-  GPIO_InitStruct.Pin = USB_SOF_Pin|USB_ID_Pin|USB_DM_Pin|USB_DP_Pin;
+  /*Configure GPIO pin : PA8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF4_I2C3;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : USB_ID_Pin USB_DM_Pin USB_DP_Pin */
+  GPIO_InitStruct.Pin = USB_ID_Pin|USB_DM_Pin|USB_DP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : USB_VBUS_Pin */
-  GPIO_InitStruct.Pin = USB_VBUS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(USB_VBUS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : HM_10_STATE_Pin */
   GPIO_InitStruct.Pin = HM_10_STATE_Pin;
@@ -431,6 +476,16 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+int _write(int file, char *ptr, int len)
+{
+	HAL_UART_Transmit_IT(
+		&huart2,
+		(const uint8_t *) ptr,
+		len
+	);
+	return len;
+}
+
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -446,24 +501,48 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	HAL_GPIO_WritePin(
-		LED_PIN_PAIRS[RED].gpio_type,
-		LED_PIN_PAIRS[RED].gpio_pin,
-		GPIO_PIN_SET
-	);
-    osDelay(100);
-    HAL_GPIO_WritePin(
-		LED_PIN_PAIRS[RED].gpio_type,
-		LED_PIN_PAIRS[RED].gpio_pin,
-		GPIO_PIN_RESET
-	);
-    osDelay(100);
-    HAL_UART_Transmit_IT(
+//    HAL_GPIO_WritePin(
+//    		LED_PIN_PAIRS[RED].gpio_type,
+//    		LED_PIN_PAIRS[RED].gpio_pin,
+//    		GPIO_PIN_SET
+//    	);
+//    osDelay(100);
+//	HAL_GPIO_WritePin(
+//		LED_PIN_PAIRS[RED].gpio_type,
+//		LED_PIN_PAIRS[RED].gpio_pin,
+//		GPIO_PIN_RESET
+//	);
+//	osDelay(100);
+
+	MPU_readProcessedData(&MPU_HI2C);
+	HAL_UART_Transmit_IT(&huart2, "~RAWDATASTART~", 14);
+	osDelay(20);
+	HAL_UART_Transmit_IT(
 		&huart2,
-		(const uint8_t *)"0123456789abcdefABCD",
-		BLE_PACKET_LEN
+		serialBuf,
+		sprintf(
+			(char *)serialBuf,
+			"A:%f|%f|%f:",
+			sensorData.ax,
+			sensorData.ay,
+			sensorData.az
+		)
 	);
-    osDelay(1000);
+	osDelay(20);
+	HAL_UART_Transmit_IT(
+		&huart2,
+		serialBuf,
+		sprintf(
+			(char *)serialBuf,
+			"G:%f|%f|%f:",
+			sensorData.gx,
+			sensorData.gy,
+			sensorData.gz
+		)
+	);
+	osDelay(20);
+	HAL_UART_Transmit_IT(&huart2, "~RAWDATAEND~", 12);
+	osDelay(20);
   }
   /* USER CODE END 5 */
 }
