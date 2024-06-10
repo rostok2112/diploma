@@ -516,7 +516,7 @@ void StartDefaultTask(void *argument)
 
 	MPU_readProcessedData(&MPU_HI2C);
 	HAL_UART_Transmit_IT(&huart2, "~RAWDATASTART~", 14);
-	osDelay(20);
+	osDelay(15);
 	HAL_UART_Transmit_IT(
 		&huart2,
 		serialBuf,
@@ -528,7 +528,7 @@ void StartDefaultTask(void *argument)
 			sensorData.az
 		)
 	);
-	osDelay(20);
+	osDelay(15);
 	HAL_UART_Transmit_IT(
 		&huart2,
 		serialBuf,
@@ -540,9 +540,9 @@ void StartDefaultTask(void *argument)
 			sensorData.gz
 		)
 	);
-	osDelay(20);
+	osDelay(15);
 	HAL_UART_Transmit_IT(&huart2, "~RAWDATAEND~", 12);
-	osDelay(20);
+	osDelay(15);
   }
   /* USER CODE END 5 */
 }
