@@ -23,3 +23,5 @@ Init:
     ```bash
     git submodule update --init --recursive
     ```
+
+Run and compile like any other `CubeMX` project
