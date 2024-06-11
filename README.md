@@ -11,6 +11,7 @@ DMP:        MPU-9250;
 
 Bluetooth:  HM-10
 
+---
 
 Init:
 
@@ -23,5 +24,9 @@ Init:
     ```bash
     git submodule update --init --recursive
     ```
+
+---
+
+Run:
 
 Run and compile like any other `CubeMX` project
