@@ -2,6 +2,8 @@
 FBT module for SteamVR
 
 ---
+[Server side of project](https://github.com/rostok2112/diploma-server)
+---
 
 IDE:        Cube IDE;
 
