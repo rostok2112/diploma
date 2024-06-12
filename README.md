@@ -2,7 +2,9 @@
 FBT module for SteamVR
 
 ---
+
 [Server side of project](https://github.com/rostok2112/diploma-server)
+
 ---
 
 IDE:        Cube IDE;
@@ -17,15 +19,15 @@ Bluetooth:  HM-10
 
 Init:
 
-    - Copy library files:
+- Copy library files:
 
-    `CubeMX -> Project Manager -> Code Generator -> Copy only the neccessary library files`
+`CubeMX -> Project Manager -> Code Generator -> Copy only the neccessary library files`
 
-    - Git clone used in project libraries:
+- Git clone used in project libraries:
 
-    ```bash
-    git submodule update --init --recursive
-    ```
+```bash
+git submodule update --init --recursive
+```
 
 ---
 
