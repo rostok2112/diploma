@@ -30,3 +30,5 @@ Init:
 Run:
 
 Run and compile like any other `CubeMX` project
+
+![image](https://github.com/rostok2112/diploma/assets/35938864/b9be1e55-6700-47ec-916e-ad05d420e98c)
